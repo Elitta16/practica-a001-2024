@@ -1,6 +1,9 @@
 package ule.edi.model;
 
+import java.util.Objects;
+
 public class Person {
+
 	private String name;
 	private String nif;
 	private int age;
@@ -33,7 +36,9 @@ public class Person {
         this.nif=nif;
 		this.name = name;
 		this.age = edad;
+		
 	}
+
 
 	@Override
 	public String toString() {
@@ -41,10 +46,17 @@ public class Person {
 	}
 	
     @Override
-	public boolean equals(Object obj) {
-		// TODO Auto-generated method stub
-		// Dos personas son iguales si son iguales sus nifs
-		return false;	
-	}
+public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+        return false;
+    }
+    Person person = (Person) obj;
+    return Objects.equals(nif, person.nif);
+}
 	
 }
+
+		
