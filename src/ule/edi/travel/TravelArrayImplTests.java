@@ -12,6 +12,11 @@ import ule.edi.model.*;
 public class TravelArrayImplTests {
 	private DateFormat dformat = null;
 	private TravelArrayImpl e, ep;
+    	private Date date;
+    	private int nSeats;
+    	private TravelArrayImpl travel;
+	private Double price;
+    	private Byte discount;
 	
 	private Date parseLocalDate(String spec) throws ParseException {
         return dformat.parse(spec);
@@ -165,7 +170,100 @@ public class TravelArrayImplTests {
 	// 	Assert.assertEquals(true,ep.isAdvanceSale(new Person("10203040","Alic", 34)));
 	// 	Assert.assertEquals(false,ep.isAdvanceSale(new Person("10202531", "Ana", 31)));
 	// 	Assert.assertEquals(3,ep.getPosPerson("10203040A"));
-	// }		
+	// }	
+
+	@Before
+    public void setUp() throws ParseException {
+        dformat = new SimpleDateFormat("dd/MM/yyyy");
+        date = dformat.parse("01/01/2025");
+        nSeats = 50;
+        travel = new TravelArrayImpl(date, nSeats);
+    }
+
+    @Test
+    public void testConstructorCreatesInstance() {
+        assertNotNull(travel);
+    }
+
+    @Test
+    public void testTravelDateInitializedCorrectly() {
+        assertEquals(date, travel.getTravelDate());
+    }
+
+    @Test
+    public void testNumberOfSeatsInitializedCorrectly() {
+        assertEquals(nSeats, travel.getNumberOfSeats());
+    }
+
+	
+    @Test
+    public void testGetNumberOfSeats() {
+        assertEquals(nSeats, travel.getNumberOfSeats());
+    }
+
+
+    @Test
+    public void testGetTravelDate() {
+        assertEquals(date, travel.getTravelDate());
+    }
+
+
+    @Test
+    public void testSellSeatPos() {
+        assertTrue(travel.sellSeatPos(1, "123456789A", "John", 30, false));
+    }
+
+    @Test
+    public void testSellSeatPosInvalidPosition() {
+        assertFalse(travel.sellSeatPos(0, "123456789A", "John", 30, false));
+    }
+
+    @Test
+    public void testSellSeatPosAlreadyOccupied() {
+        travel.sellSeatPos(1, "123456789A", "John", 30, false);
+        assertFalse(travel.sellSeatPos(1, "987654321B", "Jane", 25, false));
+    }
+
+    @Test
+    public void testSellSeatPosAlreadyOccupiedBySamePerson() {
+        travel.sellSeatPos(1, "123456789A", "John", 30, false);
+        assertFalse(travel.sellSeatPos(2, "123456789A", "John", 30, false));
+    }
+
+
+    @Test
+    public void testRefundSeat() {
+        travel.sellSeatPos(1, "123456789A", "John", 30, false);
+        assertNotNull(travel.refundSeat(1));
+    }
+
+    @Test
+    public void testRefundSeatInvalidPosition() {
+        assertNull(travel.refundSeat(0));
+    }
+
+    @Test
+    public void testRefundSeatEmptySeat() {
+        assertNull(travel.refundSeat(1));
+    }
+
+
+    @Test
+    public void testIsAdvanceSaleTrue() {
+        Person person = new Person("123456789A", "John", 30);
+        travel.sellSeatPos(1, "123456789A", "John", 30, true);
+        assertTrue(travel.isAdvanceSale(person));
+    }
+
+    @Test
+    public void testIsAdvanceSaleFalse() {
+        Person person = new Person("987654321B", "Jane", 25);
+        travel.sellSeatPos(1, "987654321B", "Jane", 25, false);
+        assertFalse(travel.isAdvanceSale(person));
+    }
+
 }
+   
+
 
 
