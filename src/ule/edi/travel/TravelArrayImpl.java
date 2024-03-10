@@ -132,13 +132,12 @@ public Person refundSeat(int pos) {
     	int maximo=0;
     	int maxtemp=0;
     	for (int i =0; i < nSeats; i++) {
-    		if (seats[i] !=null) {
+    		if (seats[i] ==null) {
     			maxtemp = maxtemp+1;
-    		    if (maxtemp > maximo) {
-    				maximo = maxtemp;
-    			}
-    			else maxtemp=0;
-    		}
+                maximo = Math.max(maximo , maxtemp);
+            }else{
+                maxtemp = 0;
+            }
     	}
         return maximo;
     }
@@ -258,7 +257,7 @@ public Double getSeatPrice(Seat seat) {
             return this.price;
         }
     }
-    return 0.0; 
+    return 0.0; // o algún otro valor predeterminado
 }
 
 }
