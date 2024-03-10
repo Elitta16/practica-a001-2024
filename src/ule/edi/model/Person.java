@@ -57,6 +57,4 @@ public boolean equals(Object obj) {
     return Objects.equals(nif, person.nif);
 }
 	
-}
-
-		
+}		
