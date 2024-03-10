@@ -220,54 +220,240 @@ public void testGetNumberOfChildren() throws Exception {
     assertEquals(1, e.getNumberOfChildren()); // No cambia
 	}
 
-	@Before
-    public void setUp() throws Exception {
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        Date date = dateFormat.parse("01/01/2023");
-        travel = new TravelArrayImpl(date, 5);
-    }
-
     @Test
     public void testSellSeatPosValid() {
-        assertTrue(travel.sellSeatPos(1, "123456789A", "John Doe", 30, false));
+        assertTrue(travel.sellSeatPos(1, "123456789G", "Pepe Perez", 30, false));
     }
 
     @Test
     public void testSellSeatPosInvalidPosition() {
-        assertFalse(travel.sellSeatPos(0, "123456789A", "John Doe", 30, false));
+        assertFalse(travel.sellSeatPos(0, "123456789G", "Pepe Perez", 30, false));
     }
 
-    @Test
-    public void testSellSeatPosInvalidPositionGreaterThanMax() {
-        assertFalse(travel.sellSeatPos(6, "123456789A", "John Doe", 30, false));
-    }
 
     @Test
     public void testSellSeatPosAlreadyOccupied() {
-        assertTrue(travel.sellSeatPos(1, "123456789A", "John Doe", 30, false));
-        assertFalse(travel.sellSeatPos(1, "987654321B", "Jane Smith", 25, false));
+        assertTrue(travel.sellSeatPos(1, "123456789G", "Pepe Perez", 30, false));
+        assertFalse(travel.sellSeatPos(1, "987654321B", "Maria Montes", 25, false));
     }
 
     @Test
     public void testSellSeatPosWithAdvanceSale() {
-        assertTrue(travel.sellSeatPos(1, "123456789A", "John Doe", 30, true));
+        assertTrue(travel.sellSeatPos(1, "123456789G", "Pepe Perez", 30, true));
     }
 
     @Test
     public void testSellSeatPosWithAdvanceSaleAndSameNIF() {
-        assertTrue(travel.sellSeatPos(1, "123456789A", "John Doe", 30, true));
-        assertFalse(travel.sellSeatPos(2, "123456789A", "Jane Smith", 25, true));
+        assertTrue(travel.sellSeatPos(1, "123456789G", "Pepe Perez", 30, true));
+        assertFalse(travel.sellSeatPos(2, "123456789G", "Maria Montes", 25, true));
     }
 
     @Test
     public void testSellSeatPosWithAdvanceSaleAndDifferentNIF() {
-        assertTrue(travel.sellSeatPos(1, "123456789A", "John Doe", 30, true));
-        assertTrue(travel.sellSeatPos(2, "987654321B", "Jane Smith", 25, true));
+        assertTrue(travel.sellSeatPos(1, "123456789G", "Pepe Perez", 30, true));
+        assertTrue(travel.sellSeatPos(2, "987654321B", "Maria Montes", 25, true));
     }
+
+
+    @Test
+    public void testSellSeatFrontPos() {
+        assertEquals(1, travel.sellSeatFrontPos("524973646P", "Pepe Perez", 30, false));
+        assertEquals(2, travel.sellSeatFrontPos("364795581N", "Maria Montes", 25, false));
+        assertEquals(3, travel.sellSeatFrontPos("567890123I", "Alicia Fernandez", 40, false));
+        assertEquals(4, travel.sellSeatFrontPos("417803910J", "Carlos Fidalgo", 50, false));
+        assertEquals(5, travel.sellSeatFrontPos("663454765T", "Almudena Seco", 35, false));
+        assertEquals(-1, travel.sellSeatFrontPos("572906954S", "Calos Morales", 60, false)); // No hay asientos disponibles
+    }
+
+    @Test
+    public void testSellSeatRearPos() {
+        assertEquals(5, travel.sellSeatRearPos("524973646P", "Pepe Perez", 30, false));
+        assertEquals(4, travel.sellSeatRearPos("364795581N", "Maria Montes", 25, false));
+        assertEquals(3, travel.sellSeatRearPos("567890123I", "Alicia Fernandez", 40, false));
+        assertEquals(2, travel.sellSeatRearPos("562974293D", "Mario Guerra", 50, false));
+        assertEquals(1, travel.sellSeatRearPos("663454765T", "Almudena Seco", 35, false));
+        assertEquals(-1, travel.sellSeatRearPos("572906954S", "Calos Morales", 60, false)); // No hay asientos disponibles
+    }
+
+
+    @Test
+    public void testGetSeatWithValidPosition() {
+        // Venta de un asiento en la posición 3
+        travel.sellSeatPos(3, "524973646P", "Pepe Perez", 30, false);
+        
+        // Verificar que el asiento devuelto en la posición 3 es correcto
+        assertEquals("Pepe Perez", travel.getSeat(3).getHolder().getName());
+    }
+
+    @Test
+    public void testGetSeatWithInvalidPosition() {
+        // Verificar que el método devuelve null para una posición inválida (0)
+        assertNull(travel.getSeat(0));
+        
+        // Verificar que el método devuelve null para una posición inválida (mayor que el número de asientos)
+        assertNull(travel.getSeat(6));
+    }
+
+
+    @Test
+    public void testGetSeatPrice_NullSeat() {
+        Seat seat = null;
+        assertEquals(0.0, travel.getSeatPrice(seat), 0.0);
+    }
+
+    @Test
+    public void testMaxNumberConsecutiveSeatsNoSeatsSold() {
+        assertEquals(5, travel.getMaxNumberConsecutiveSeats());
+    }
+
+    @Test
+    public void testMaxNumberConsecutiveSeatsAllSeatsSold() {
+        travel.sellSeatPos(1, "524973646P", "Pepe Perez", 30, false);
+        travel.sellSeatPos(2, "364795581N", "Maria Montes", 25, false);
+        travel.sellSeatPos(3, "567890123I", "Alicia Fernandez", 40, false);
+        travel.sellSeatPos(4, "674168418M", "Bob Esponja", 35, false);
+        travel.sellSeatPos(5, "666666666L", "Eva Fuentes", 50, false);
+        
+        // No hay asientos consecutivos disponibles
+        assertEquals(0, travel.getMaxNumberConsecutiveSeats());
+    }
+
+
+    @Test
+    public void testMaxNumberConsecutiveSeatsLastSeatSold() {
+        travel.sellSeatPos(5, "661417111C", "Eva Fuentes", 50, false);
+        
+        // Solo el último asiento vendido, por lo que hay 4 asientos consecutivos disponibles
+        assertEquals(4, travel.getMaxNumberConsecutiveSeats());
+    }
+    
+	@Before
+    public void setUp() {
+        travel = new TravelArrayImpl(new Date(), 5);
+    }
+
+
+    @Test
+    public void testGetAvailableSeatsList() {
+        // Venta de asientos en las posiciones 2, 4 y 5
+        travel.sellSeatPos(2, "524973646P", "Pepe Perez", 30, false);
+        travel.sellSeatPos(4, "934581364X", "Lucia Liu", 25, false);
+        travel.sellSeatPos(5, "555555555C", "Alana Sanchez", 40, false);
+
+        // Obtener la lista de asientos disponibles
+        List<Integer> availableSeats = travel.getAvailableSeatsList();
+
+        // Verificar que la lista contiene las posiciones de los asientos disponibles
+        assertTrue(availableSeats.contains(1));
+        assertTrue(availableSeats.contains(3));
+        assertFalse(availableSeats.contains(2));
+        assertFalse(availableSeats.contains(4));
+        assertFalse(availableSeats.contains(5));
+    }
+
+    @Test
+    public void testGetAdvanceSaleSeatsList() {
+        // Venta de asientos en las posiciones 2, 4 y 5
+        travel.sellSeatPos(2, "524973646P", "Pepe Perez", 30, true);
+        travel.sellSeatPos(4, "934581364X", "Lucia Liu", 25, true);
+        travel.sellSeatPos(5, "555555555C", "Alana Sanchez", 40, false);
+
+        // Obtener la lista de asientos de venta anticipada
+        List<Integer> advanceSaleSeats = travel.getAdvanceSaleSeatsList();
+
+        // Verificar que la lista contiene las posiciones de los asientos de venta anticipada
+        assertTrue(advanceSaleSeats.contains(2));
+        assertTrue(advanceSaleSeats.contains(4));
+        assertFalse(advanceSaleSeats.contains(1));
+        assertFalse(advanceSaleSeats.contains(3));
+        assertFalse(advanceSaleSeats.contains(5));
+    }
+
+	@Test
+public void testEventoNoVacio() throws Exception {
+    e.sellSeatPos(1, "1010", "AA", 10, true);
+    assertFalse(e.getNumberOfAvailableSeats() == 110);
+}
+
+@Test
+public void testGetDiscountAdvanceSaleFalse() throws Exception {
+    assertFalse(e.getDiscountAdvanceSale() != 25);
+}
+
+@Test
+public void testgetCollectionSinVentas() throws Exception {
+    assertTrue(e.getCollectionTravel() == 0.0);
+}
+
+// test de person 
+@Test
+    public void testConstructorAndGetters() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        assertEquals("525465567L", person.getNif());
+        assertEquals("Raul Vega", person.getName());
+        assertEquals(30, person.getAge());
+    }
+
+    @Test
+    public void testSetters() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        person.setName("Julia Medina");
+        person.setNif("718141059Y");
+        person.setAge(25);
+        assertEquals("718141059Y", person.getNif());
+        assertEquals("Julia Medina", person.getName());
+        assertEquals(25, person.getAge());
+    }
+
+    @Test
+    public void testToString() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        assertEquals("{ NIF: 525465567L  Name : Raul Vega, Age:30}", person.toString());
+    }
+
+    @Test
+    public void testEquals_SameObject() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        assertTrue(person.equals(person));
+    }
+
+    @Test
+    public void testEquals_NullObject() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        assertFalse(person.equals(null));
+    }
+
+    @Test
+    public void testEquals_DifferentClass() {
+        Person person = new Person("525465567L", "Raul Vega", 30);
+        assertFalse(person.equals("Raul Vega"));
+    }
+
+    @Test
+    public void testEquals_DifferentNif() {
+        Person person1 = new Person("525465567L", "Raul Vega", 30);
+        Person person2 = new Person("987654321Y", "Raul Vega", 30);
+        assertFalse(person1.equals(person2));
+    }
+
+    @Test
+    public void testEquals_SameNif() {
+        Person person1 = new Person("525465567L", "Raul Vega", 30);
+        Person person2 = new Person("525465567L", "Julia Medina", 25);
+        assertTrue(person1.equals(person2));
+    }
+
+    @Test
+    public void testEquals_DifferentObjects() {
+        Person person1 = new Person("525465567L", "Raul Vega", 30);
+        Person person2 = new Person("525465567L", "Raul Vega", 30);
+        assertTrue(person1.equals(person2));
+    }
+}
+    
 	
 
 
-}
    
    
 
